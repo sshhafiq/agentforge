@@ -158,6 +158,23 @@ def test_to_schemas_shape():
     assert "parameters" in schemas[0]
 
 
+def test_float_list_and_dict_hints():
+    @tool
+    def f(temperature: float, tags: list, meta: dict, query: str) -> str:
+        return query
+
+    props = f.tool.parameters["properties"]
+    assert props["temperature"] == {"type": "number"}
+    assert props["tags"] == {"type": "array"}
+    assert props["meta"] == {"type": "object"}
+    assert set(f.tool.parameters["required"]) == {
+        "temperature",
+        "tags",
+        "meta",
+        "query",
+    }
+
+
 def test_nested_object_validation():
     schema = {
         "type": "object",
