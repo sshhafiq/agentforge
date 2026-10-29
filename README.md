@@ -122,6 +122,15 @@ agentforge run code-review     # diff review agent with a post gate
 agentforge list                # list recorded runs
 ```
 
+## Persistence
+
+Runs, events, checkpoints, and approvals live in a SQLite store, so a
+paused workflow survives a process restart: re-run the same CLI command
+and `agentforge approve` resumes it from the stored checkpoint. The CLI
+defaults to `agentforge.db` in the working directory; pass `--store` to
+point it at a different path (e.g. `agentforge --store /tmp/runs.db run
+research`).
+
 ## Example output
 
 ```
