@@ -238,6 +238,10 @@ class ToolRegistry:
     def __len__(self) -> int:
         return len(self._tools)
 
+    def names(self) -> list[str]:
+        """Registered tool names, in registration order."""
+        return list(self._tools)
+
     def to_schemas(self) -> list[dict]:
         """All tools as model-facing function schemas."""
         return [t.to_schema() for t in self._tools.values()]
