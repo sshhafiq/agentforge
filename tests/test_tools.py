@@ -187,6 +187,23 @@ def test_registry_call_validates_argument_types():
         registry.call("add", {"a": "one", "b": 2})
 
 
+def test_registry_names_lists_registered_tools():
+    registry = ToolRegistry()
+
+    @tool(description="Echo.")
+    def echo(text: str) -> str:
+        return text
+
+    @tool(description="Shout.")
+    def shout(text: str) -> str:
+        return text.upper()
+
+    assert registry.names() == []
+    registry.register(echo)
+    registry.register(shout)
+    assert registry.names() == ["echo", "shout"]
+
+
 def test_nested_object_validation():
     schema = {
         "type": "object",
