@@ -105,6 +105,10 @@ class EventLog:
             return list(self._events)
         return [e for e in self._events if e.run_id == run_id]
 
+    def events_of_type(self, type: str, run_id: Optional[str] = None) -> list[Event]:
+        """Events of one type, optionally restricted to a single run."""
+        return [e for e in self.events(run_id) if e.type == type]
+
     def to_json(self) -> str:
         return json.dumps([e.to_dict() for e in self._events])
 
