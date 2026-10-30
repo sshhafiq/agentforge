@@ -3,6 +3,7 @@
 import pytest
 
 from agentforge.engine import (
+    EventLog,
     EventType,
     RetryPolicy,
     RunStatus,
@@ -154,6 +155,21 @@ def test_unknown_workflow_raises():
     engine = make_engine()
     with pytest.raises(ValueError, match="unknown workflow"):
         engine.run("nope")
+
+
+def test_events_of_type_filters_by_type_and_run():
+    log = EventLog()
+    log.append("run-a", "step_completed", {"step": "one"})
+    log.append("run-a", "step_failed", {"step": "two"})
+    log.append("run-b", "step_completed", {"step": "one"})
+    assert [e.payload["step"] for e in log.events_of_type("step_completed")] == [
+        "one",
+        "one",
+    ]
+    assert [
+        e.payload["step"] for e in log.events_of_type("step_completed", run_id="run-a")
+    ] == ["one"]
+    assert log.events_of_type("workflow_completed") == []
 
 
 def test_pause_is_not_retried():
