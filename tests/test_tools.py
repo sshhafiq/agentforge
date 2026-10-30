@@ -175,6 +175,18 @@ def test_float_list_and_dict_hints():
     }
 
 
+def test_registry_call_validates_argument_types():
+    registry = ToolRegistry()
+
+    @tool
+    def add(a: int, b: int) -> int:
+        return a + b
+
+    registry.register(add)
+    with pytest.raises(ToolValidationError, match="expected integer"):
+        registry.call("add", {"a": "one", "b": 2})
+
+
 def test_nested_object_validation():
     schema = {
         "type": "object",
