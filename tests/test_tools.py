@@ -204,6 +204,23 @@ def test_registry_names_lists_registered_tools():
     assert registry.names() == ["echo", "shout"]
 
 
+def test_registry_descriptions_maps_names_to_descriptions():
+    registry = ToolRegistry()
+
+    @tool(description="Echo.")
+    def echo(text: str) -> str:
+        return text
+
+    @tool(description="Shout.")
+    def shout(text: str) -> str:
+        return text.upper()
+
+    assert registry.descriptions() == {}
+    registry.register(echo)
+    registry.register(shout)
+    assert registry.descriptions() == {"echo": "Echo.", "shout": "Shout."}
+
+
 def test_nested_object_validation():
     schema = {
         "type": "object",
