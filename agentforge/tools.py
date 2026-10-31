@@ -242,6 +242,10 @@ class ToolRegistry:
         """Registered tool names, in registration order."""
         return list(self._tools)
 
+    def descriptions(self) -> dict[str, str]:
+        """Map each registered tool name to its one-line description."""
+        return {name: tool.description for name, tool in self._tools.items()}
+
     def to_schemas(self) -> list[dict]:
         """All tools as model-facing function schemas."""
         return [t.to_schema() for t in self._tools.values()]
