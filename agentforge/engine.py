@@ -212,6 +212,10 @@ class WorkflowEngine:
             raise ValueError("a workflow needs at least one step")
         self._workflows[name] = steps
 
+    def workflow_names(self) -> list[str]:
+        """Names of registered workflows, in registration order."""
+        return list(self._workflows)
+
     # ------------------------------------------------------------------
     # execution
     # ------------------------------------------------------------------
