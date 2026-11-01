@@ -109,6 +109,13 @@ class EventLog:
         """Events of one type, optionally restricted to a single run."""
         return [e for e in self.events(run_id) if e.type == type]
 
+    def count_by_type(self, run_id: Optional[str] = None) -> dict[str, int]:
+        """Per-type event counts, optionally restricted to a single run."""
+        counts: dict[str, int] = {}
+        for event in self.events(run_id):
+            counts[event.type] = counts.get(event.type, 0) + 1
+        return counts
+
     def to_json(self) -> str:
         return json.dumps([e.to_dict() for e in self._events])
 
