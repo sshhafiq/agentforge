@@ -172,6 +172,19 @@ def test_events_of_type_filters_by_type_and_run():
     assert log.events_of_type("workflow_completed") == []
 
 
+def test_count_by_type_counts_all_runs_and_one_run():
+    log = EventLog()
+    log.append("run-a", "step_completed", {"step": "one"})
+    log.append("run-a", "step_failed", {"step": "two"})
+    log.append("run-b", "step_completed", {"step": "one"})
+    assert log.count_by_type() == {"step_completed": 2, "step_failed": 1}
+    assert log.count_by_type(run_id="run-a") == {
+        "step_completed": 1,
+        "step_failed": 1,
+    }
+    assert log.count_by_type(run_id="run-missing") == {}
+
+
 def test_pause_is_not_retried():
     from agentforge.engine import PauseWorkflow
 
@@ -188,3 +201,11 @@ def test_pause_is_not_retried():
     result = engine.run("w")
     assert result.status == RunStatus.PAUSED
     assert len(attempts) == 1  # pausing must never be treated as failure
+
+
+def test_workflow_names_lists_registered_workflows():
+    engine = make_engine()
+    assert engine.workflow_names() == []
+    engine.register_workflow("first", [Step("s", lambda ctx: {})])
+    engine.register_workflow("second", [Step("s", lambda ctx: {})])
+    assert engine.workflow_names() == ["first", "second"]
