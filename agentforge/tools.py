@@ -242,6 +242,13 @@ class ToolRegistry:
         """Registered tool names, in registration order."""
         return list(self._tools)
 
+    def unregister(self, name: str) -> None:
+        """Remove a registered tool; raises KeyError if it is not known."""
+        try:
+            del self._tools[name]
+        except KeyError:
+            raise KeyError(f"unknown tool: '{name}'") from None
+
     def descriptions(self) -> dict[str, str]:
         """Map each registered tool name to its one-line description."""
         return {name: tool.description for name, tool in self._tools.items()}
