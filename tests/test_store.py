@@ -70,6 +70,22 @@ def test_approval_lifecycle():
     assert store.pending_approvals() == []
 
 
+def test_count_pending_approvals():
+    store = RunStore()
+    store.create_run("r1", "w")
+    store.create_run("r2", "w")
+    assert store.count_pending_approvals() == 0
+    first = store.save_approval("r1", "gate", "Ship it?")
+    store.save_approval("r1", "gate2", "Deploy?")
+    store.save_approval("r2", "gate", "Ship it?")
+    assert store.count_pending_approvals() == 3
+    assert store.count_pending_approvals("r1") == 2
+    assert store.count_pending_approvals("missing") == 0
+    store.resolve_approval(first, {"verdict": "approve"})
+    assert store.count_pending_approvals() == 2
+    assert store.count_pending_approvals("r1") == 1
+
+
 def test_count_runs_by_status():
     store = RunStore()
     assert store.count_runs_by_status() == {}
