@@ -228,6 +228,19 @@ class RunStore:
             result.append(d)
         return result
 
+    def count_pending_approvals(self, run_id: Optional[str] = None) -> int:
+        """How many approvals are still pending, optionally for one run."""
+        with self._lock:
+            if run_id:
+                return self._conn.execute(
+                    "SELECT COUNT(*) FROM approvals"
+                    " WHERE run_id = ? AND status = 'pending'",
+                    (run_id,),
+                ).fetchone()[0]
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM approvals WHERE status = 'pending'"
+            ).fetchone()[0]
+
     def resolve_approval(self, approval_id: int, decision: Any) -> None:
         with self._lock, self._conn:
             self._conn.execute(
