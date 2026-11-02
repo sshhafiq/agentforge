@@ -234,3 +234,25 @@ def test_nested_object_validation():
     assert any("missing required property 'n'" in e for e in errs)
     errs = validate_against_schema({"cfg": {"n": "x"}}, schema)
     assert any("expected integer" in e for e in errs)
+
+
+def test_registry_unregister_removes_tool():
+    registry = ToolRegistry()
+
+    @tool(description="Echo.")
+    def echo(text: str) -> str:
+        return text
+
+    registry.register(echo)
+    assert "echo" in registry
+    registry.unregister("echo")
+    assert "echo" not in registry
+    assert registry.names() == []
+    with pytest.raises(KeyError, match="unknown tool"):
+        registry.get("echo")
+
+
+def test_registry_unregister_unknown_raises():
+    registry = ToolRegistry()
+    with pytest.raises(KeyError, match="unknown tool"):
+        registry.unregister("nope")
