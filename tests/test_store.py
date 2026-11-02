@@ -68,3 +68,14 @@ def test_approval_lifecycle():
     assert store.pending_approvals("r1") == []
     # Resolved approvals are still queryable across runs.
     assert store.pending_approvals() == []
+
+
+def test_count_runs_by_status():
+    store = RunStore()
+    assert store.count_runs_by_status() == {}
+    store.create_run("r1", "a")
+    store.create_run("r2", "b")
+    store.create_run("r3", "c")
+    store.update_run_status("r2", "completed")
+    store.update_run_status("r3", "completed")
+    assert store.count_runs_by_status() == {"running": 1, "completed": 2}
