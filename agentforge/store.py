@@ -109,6 +109,14 @@ class RunStore:
                 ).fetchall()
         return [dict(r) for r in rows]
 
+    def count_runs_by_status(self) -> dict[str, int]:
+        """Number of runs grouped by status, e.g. {'running': 2}."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT status, COUNT(*) AS n FROM runs GROUP BY status"
+            ).fetchall()
+        return {r["status"]: r["n"] for r in rows}
+
     # ------------------------------------------------------------------
     # events
     # ------------------------------------------------------------------
