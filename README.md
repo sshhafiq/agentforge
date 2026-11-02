@@ -182,6 +182,8 @@ tests/               # 49 pytest tests — engine, agent, tools, HITL, store
   Schema from type hints (`str` → `{"type": "string"}`, `Literal` → `enum`,
   `Optional` → `nullable`), and a small built-in validator rejects malformed
   model output with a clear error the agent can recover from.
+  `ToolRegistry.unregister(name)` drops a tool when an agent's toolset
+  changes mid-run.
 - **Decisions are data.** HITL verdicts are plain dicts
   (`{"verdict": "approve"|"reject"|"edit", "edits": {...}}`), so any UI —
   CLI, Slack, web — can resolve approvals without framework coupling.
