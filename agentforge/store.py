@@ -117,6 +117,27 @@ class RunStore:
             ).fetchall()
         return {r["status"]: r["n"] for r in rows}
 
+    def delete_run(self, run_id: str) -> bool:
+        """Delete a run and its events, checkpoint, and approvals.
+
+        Returns True when the run existed, False otherwise. Useful for
+        pruning finished runs from a long-lived store file.
+        """
+        with self._lock, self._conn:
+            self._conn.execute(
+                "DELETE FROM events WHERE run_id = ?", (run_id,)
+            )
+            self._conn.execute(
+                "DELETE FROM checkpoints WHERE run_id = ?", (run_id,)
+            )
+            self._conn.execute(
+                "DELETE FROM approvals WHERE run_id = ?", (run_id,)
+            )
+            cur = self._conn.execute(
+                "DELETE FROM runs WHERE id = ?", (run_id,)
+            )
+            return cur.rowcount > 0
+
     # ------------------------------------------------------------------
     # events
     # ------------------------------------------------------------------
