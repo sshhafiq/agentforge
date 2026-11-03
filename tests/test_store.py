@@ -86,6 +86,25 @@ def test_count_pending_approvals():
     assert store.count_pending_approvals("r1") == 1
 
 
+def test_delete_run_removes_related_rows():
+    store = RunStore()
+    store.create_run("r1", "a")
+    store.create_run("r2", "b")
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    store.save_checkpoint("r1", 1, {"x": 1})
+    store.save_approval("r1", "gate", "Ship it?")
+    assert store.delete_run("r1") is True
+    assert store.get_run("r1") is None
+    assert store.get_events("r1") == []
+    assert store.load_checkpoint("r1") is None
+    assert store.pending_approvals("r1") == []
+    # The other run is untouched, and a second delete reports False.
+    assert store.get_run("r2") is not None
+    assert store.delete_run("r1") is False
+    assert store.delete_run("missing") is False
+
+
 def test_count_runs_by_status():
     store = RunStore()
     assert store.count_runs_by_status() == {}
