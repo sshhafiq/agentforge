@@ -117,6 +117,13 @@ class RunStore:
             ).fetchone()
         return row is not None
 
+    def count_runs(self) -> int:
+        """Total number of runs in the store, across every status."""
+        with self._lock:
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM runs"
+            ).fetchone()[0]
+
     def count_runs_by_status(self) -> dict[str, int]:
         """Number of runs grouped by status, e.g. {'running': 2}."""
         with self._lock:
