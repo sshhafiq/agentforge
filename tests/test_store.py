@@ -116,6 +116,18 @@ def test_count_runs_by_status():
     assert store.count_runs_by_status() == {"running": 1, "completed": 2}
 
 
+def test_count_runs():
+    store = RunStore()
+    assert store.count_runs() == 0
+    store.create_run("r1", "a")
+    store.create_run("r2", "b")
+    assert store.count_runs() == 2
+    store.update_run_status("r2", "completed")
+    assert store.count_runs() == 2
+    store.delete_run("r1")
+    assert store.count_runs() == 1
+
+
 def test_has_run():
     store = RunStore()
     assert store.has_run("missing") is False
