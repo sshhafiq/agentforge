@@ -109,6 +109,14 @@ class RunStore:
                 ).fetchall()
         return [dict(r) for r in rows]
 
+    def has_run(self, run_id: str) -> bool:
+        """True when a run with this id exists in the store."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM runs WHERE id = ?", (run_id,)
+            ).fetchone()
+        return row is not None
+
     def count_runs_by_status(self) -> dict[str, int]:
         """Number of runs grouped by status, e.g. {'running': 2}."""
         with self._lock:
