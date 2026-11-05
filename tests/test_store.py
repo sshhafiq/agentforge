@@ -135,3 +135,17 @@ def test_has_run():
     assert store.has_run("r1") is True
     store.delete_run("r1")
     assert store.has_run("r1") is False
+
+
+def test_list_run_ids_in_creation_order():
+    store = RunStore()
+    assert store.list_run_ids() == []
+    store.create_run("r1", "a")
+    store.create_run("r2", "b")
+    store.create_run("r3", "c")
+    store.update_run_status("r2", "completed")
+    assert store.list_run_ids() == ["r1", "r2", "r3"]
+    assert store.list_run_ids("completed") == ["r2"]
+    assert store.list_run_ids("missing-status") == []
+    store.delete_run("r1")
+    assert store.list_run_ids() == ["r2", "r3"]
