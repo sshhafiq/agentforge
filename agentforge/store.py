@@ -215,6 +215,14 @@ class RunStore:
                 (run_id, step_index, json.dumps(state), time.time()),
             )
 
+    def has_checkpoint(self, run_id: str) -> bool:
+        """True when a checkpoint has been saved for this run."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM checkpoints WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return row is not None
+
     def load_checkpoint(self, run_id: str) -> Optional[dict]:
         with self._lock:
             row = self._conn.execute(
