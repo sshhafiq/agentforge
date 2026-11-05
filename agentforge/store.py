@@ -223,6 +223,18 @@ class RunStore:
             ).fetchone()
         return row is not None
 
+    def delete_checkpoint(self, run_id: str) -> bool:
+        """Delete the checkpoint saved for this run, if any.
+
+        Returns True when a checkpoint existed, False otherwise. The
+        run itself and its events and approvals are left untouched.
+        """
+        with self._lock, self._conn:
+            cur = self._conn.execute(
+                "DELETE FROM checkpoints WHERE run_id = ?", (run_id,)
+            )
+            return cur.rowcount > 0
+
     def load_checkpoint(self, run_id: str) -> Optional[dict]:
         with self._lock:
             row = self._conn.execute(
