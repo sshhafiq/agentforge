@@ -160,3 +160,16 @@ def test_has_checkpoint():
     assert store.has_checkpoint("r1") is True
     store.delete_run("r1")
     assert store.has_checkpoint("r1") is False
+
+
+def test_delete_checkpoint():
+    store = RunStore()
+    store.create_run("r1", "demo")
+    assert store.delete_checkpoint("r1") is False
+    store.save_checkpoint("r1", 2, {"x": 2})
+    assert store.delete_checkpoint("r1") is True
+    assert store.has_checkpoint("r1") is False
+    assert store.load_checkpoint("r1") is None
+    # The run itself survives, and a second delete reports False.
+    assert store.get_run("r1") is not None
+    assert store.delete_checkpoint("r1") is False
