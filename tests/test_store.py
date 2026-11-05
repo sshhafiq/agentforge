@@ -149,3 +149,14 @@ def test_list_run_ids_in_creation_order():
     assert store.list_run_ids("missing-status") == []
     store.delete_run("r1")
     assert store.list_run_ids() == ["r2", "r3"]
+
+
+def test_has_checkpoint():
+    store = RunStore()
+    assert store.has_checkpoint("r1") is False
+    store.create_run("r1", "demo")
+    assert store.has_checkpoint("r1") is False
+    store.save_checkpoint("r1", 1, {"x": 1})
+    assert store.has_checkpoint("r1") is True
+    store.delete_run("r1")
+    assert store.has_checkpoint("r1") is False
