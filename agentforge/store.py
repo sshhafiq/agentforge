@@ -109,6 +109,10 @@ class RunStore:
                 ).fetchall()
         return [dict(r) for r in rows]
 
+    def list_run_ids(self, status: Optional[str] = None) -> list[str]:
+        """Run ids in creation order, optionally filtered by status."""
+        return [r["id"] for r in self.list_runs(status)]
+
     def has_run(self, run_id: str) -> bool:
         """True when a run with this id exists in the store."""
         with self._lock:
