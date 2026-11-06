@@ -223,6 +223,21 @@ class RunStore:
             ).fetchone()
         return row is not None
 
+    def count_checkpoints(self) -> int:
+        """Total number of checkpoints currently saved, across all runs."""
+        with self._lock:
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM checkpoints"
+            ).fetchone()[0]
+
+    def list_checkpoint_run_ids(self) -> list[str]:
+        """Sorted run ids that currently have a checkpoint saved."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT run_id FROM checkpoints ORDER BY run_id"
+            ).fetchall()
+        return [r["run_id"] for r in rows]
+
     def delete_checkpoint(self, run_id: str) -> bool:
         """Delete the checkpoint saved for this run, if any.
 
