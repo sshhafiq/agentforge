@@ -173,3 +173,36 @@ def test_delete_checkpoint():
     # The run itself survives, and a second delete reports False.
     assert store.get_run("r1") is not None
     assert store.delete_checkpoint("r1") is False
+
+
+def test_count_checkpoints():
+    store = RunStore()
+    assert store.count_checkpoints() == 0
+    store.create_run("r1", "a")
+    store.create_run("r2", "b")
+    store.save_checkpoint("r1", 1, {"x": 1})
+    assert store.count_checkpoints() == 1
+    # Saving again for the same run replaces, it does not add.
+    store.save_checkpoint("r1", 2, {"x": 2})
+    assert store.count_checkpoints() == 1
+    store.save_checkpoint("r2", 1, {"y": 1})
+    assert store.count_checkpoints() == 2
+    store.delete_checkpoint("r1")
+    assert store.count_checkpoints() == 1
+    store.delete_run("r2")
+    assert store.count_checkpoints() == 0
+
+
+def test_list_checkpoint_run_ids_sorted():
+    store = RunStore()
+    assert store.list_checkpoint_run_ids() == []
+    store.create_run("r2", "b")
+    store.create_run("r1", "a")
+    store.create_run("r3", "c")
+    store.save_checkpoint("r2", 1, {"x": 1})
+    store.save_checkpoint("r1", 1, {"y": 1})
+    assert store.list_checkpoint_run_ids() == ["r1", "r2"]
+    store.delete_checkpoint("r1")
+    assert store.list_checkpoint_run_ids() == ["r2"]
+    store.delete_run("r2")
+    assert store.list_checkpoint_run_ids() == []
