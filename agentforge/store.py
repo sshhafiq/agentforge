@@ -238,6 +238,19 @@ class RunStore:
             ).fetchall()
         return [r["run_id"] for r in rows]
 
+    def checkpoint_step(self, run_id: str) -> Optional[int]:
+        """Step index of the checkpoint saved for this run, or None.
+
+        Lets a caller ask how far a run got before deciding whether to
+        resume from its checkpoint, without loading the full state.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT step_index FROM checkpoints WHERE run_id = ?",
+                (run_id,),
+            ).fetchone()
+        return None if row is None else row["step_index"]
+
     def delete_checkpoint(self, run_id: str) -> bool:
         """Delete the checkpoint saved for this run, if any.
 
