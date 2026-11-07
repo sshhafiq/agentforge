@@ -206,3 +206,17 @@ def test_list_checkpoint_run_ids_sorted():
     assert store.list_checkpoint_run_ids() == ["r2"]
     store.delete_run("r2")
     assert store.list_checkpoint_run_ids() == []
+
+
+def test_checkpoint_step_reports_saved_step():
+    store = RunStore()
+    assert store.checkpoint_step("r1") is None
+    store.create_run("r1", "demo")
+    assert store.checkpoint_step("r1") is None
+    store.save_checkpoint("r1", 4, {"x": 1})
+    assert store.checkpoint_step("r1") == 4
+    # Saving again replaces the step, and deleting clears it.
+    store.save_checkpoint("r1", 7, {"x": 2})
+    assert store.checkpoint_step("r1") == 7
+    store.delete_checkpoint("r1")
+    assert store.checkpoint_step("r1") is None
