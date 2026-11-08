@@ -208,12 +208,37 @@ class RunStore:
             ).fetchone()
         return row is not None
 
+    def count_events_by_type(self, run_id: str) -> dict[str, int]:
+        """Number of events for ``run_id`` grouped by event type."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT type, COUNT(*) AS n FROM events"
+                " WHERE run_id = ? GROUP BY type",
+                (run_id,),
+            ).fetchall()
+        return {r["type"]: r["n"] for r in rows}
+
     def latest_event_type(self, run_id: str) -> Optional[str]:
         """Type of the most recently stored event for ``run_id``, or None."""
         with self._lock:
             row = self._conn.execute(
                 "SELECT type FROM events WHERE run_id = ?"
                 " ORDER BY seq DESC LIMIT 1",
+                (run_id,),
+            ).fetchone()
+        return row["type"] if row is not None else None
+
+    def first_event_type(self, run_id: str) -> Optional[str]:
+        """Type of the earliest stored event for ``run_id``, or None.
+
+        Pairs with :meth:`latest_event_type` so a caller can see how a
+        run started as well as where it ended up, without loading the
+        full event log.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT type FROM events WHERE run_id = ?"
+                " ORDER BY seq ASC LIMIT 1",
                 (run_id,),
             ).fetchone()
         return row["type"] if row is not None else None
