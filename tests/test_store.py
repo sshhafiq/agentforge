@@ -231,3 +231,17 @@ def test_has_events_tracks_stored_events():
                              payload={}, ts=1.0))
     assert store.has_events("r1") is True
     assert store.has_events("other") is False
+
+
+def test_latest_event_type_reports_most_recent_event():
+    store = RunStore()
+    assert store.latest_event_type("r1") is None
+    store.create_run("r1", "w")
+    assert store.latest_event_type("r1") is None
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    assert store.latest_event_type("r1") == "workflow_started"
+    store.append_event(Event(seq=1, run_id="r1", type="step_completed",
+                             payload={}, ts=2.0))
+    assert store.latest_event_type("r1") == "step_completed"
+    assert store.latest_event_type("other") is None
