@@ -208,6 +208,16 @@ class RunStore:
             ).fetchone()
         return row is not None
 
+    def latest_event_type(self, run_id: str) -> Optional[str]:
+        """Type of the most recently stored event for ``run_id``, or None."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT type FROM events WHERE run_id = ?"
+                " ORDER BY seq DESC LIMIT 1",
+                (run_id,),
+            ).fetchone()
+        return row["type"] if row is not None else None
+
     # ------------------------------------------------------------------
     # checkpoints
     # ------------------------------------------------------------------
