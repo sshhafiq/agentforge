@@ -200,6 +200,14 @@ class RunStore:
                 "SELECT COUNT(*) FROM events WHERE run_id = ?", (run_id,)
             ).fetchone()[0]
 
+    def has_events(self, run_id: str) -> bool:
+        """True when at least one event is stored for ``run_id``."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM events WHERE run_id = ? LIMIT 1", (run_id,)
+            ).fetchone()
+        return row is not None
+
     # ------------------------------------------------------------------
     # checkpoints
     # ------------------------------------------------------------------
