@@ -220,3 +220,14 @@ def test_checkpoint_step_reports_saved_step():
     assert store.checkpoint_step("r1") == 7
     store.delete_checkpoint("r1")
     assert store.checkpoint_step("r1") is None
+
+
+def test_has_events_tracks_stored_events():
+    store = RunStore()
+    assert store.has_events("r1") is False
+    store.create_run("r1", "w")
+    assert store.has_events("r1") is False
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    assert store.has_events("r1") is True
+    assert store.has_events("other") is False
