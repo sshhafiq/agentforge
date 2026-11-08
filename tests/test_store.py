@@ -245,3 +245,35 @@ def test_latest_event_type_reports_most_recent_event():
                              payload={}, ts=2.0))
     assert store.latest_event_type("r1") == "step_completed"
     assert store.latest_event_type("other") is None
+
+
+def test_count_events_by_type_groups_stored_events():
+    store = RunStore()
+    assert store.count_events_by_type("r1") == {}
+    store.create_run("r1", "w")
+    assert store.count_events_by_type("r1") == {}
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    store.append_event(Event(seq=1, run_id="r1", type="step_completed",
+                             payload={}, ts=2.0))
+    store.append_event(Event(seq=2, run_id="r1", type="step_completed",
+                             payload={}, ts=3.0))
+    assert store.count_events_by_type("r1") == {
+        "workflow_started": 1,
+        "step_completed": 2,
+    }
+    assert store.count_events_by_type("other") == {}
+
+
+def test_first_event_type_reports_earliest_event():
+    store = RunStore()
+    assert store.first_event_type("r1") is None
+    store.create_run("r1", "w")
+    assert store.first_event_type("r1") is None
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    assert store.first_event_type("r1") == "workflow_started"
+    store.append_event(Event(seq=1, run_id="r1", type="step_completed",
+                             payload={}, ts=2.0))
+    assert store.first_event_type("r1") == "workflow_started"
+    assert store.first_event_type("other") is None
