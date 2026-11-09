@@ -228,6 +228,20 @@ class RunStore:
             ).fetchone()
         return row["type"] if row is not None else None
 
+    def distinct_event_types(self, run_id: str) -> list[str]:
+        """Sorted distinct event types stored for ``run_id``.
+
+        Handy for a quick summary of what happened in a run without
+        loading the full event log or counting each type first.
+        """
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT DISTINCT type FROM events"
+                " WHERE run_id = ? ORDER BY type",
+                (run_id,),
+            ).fetchall()
+        return [r["type"] for r in rows]
+
     def first_event_type(self, run_id: str) -> Optional[str]:
         """Type of the earliest stored event for ``run_id``, or None.
 
