@@ -200,3 +200,8 @@ tests/               # 49 pytest tests — engine, agent, tools, HITL, store
 
 MIT — built as a portfolio project demonstrating durable execution,
 event sourcing, and agent loop design.
+
+The run store can also summarise a run's event log without loading it:
+`count_events_by_type` groups stored events by type, and
+`first_event_type` / `latest_event_type` report how a run started and
+where it ended up.
