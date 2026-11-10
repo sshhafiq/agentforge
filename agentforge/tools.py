@@ -253,6 +253,23 @@ class ToolRegistry:
         """Map each registered tool name to its one-line description."""
         return {name: tool.description for name, tool in self._tools.items()}
 
+    def search(self, query: str) -> list[Tool]:
+        """Tools whose name or description contains ``query``.
+
+        Matching is case-insensitive and results keep registration
+        order, so an agent (or a UI listing tools) can narrow a large
+        registry down to the candidates for a task. An empty or
+        whitespace-only query matches every registered tool.
+        """
+        needle = query.strip().lower()
+        if not needle:
+            return list(self._tools.values())
+        return [
+            tool
+            for tool in self._tools.values()
+            if needle in tool.name.lower() or needle in tool.description.lower()
+        ]
+
     def to_schemas(self) -> list[dict]:
         """All tools as model-facing function schemas."""
         return [t.to_schema() for t in self._tools.values()]
