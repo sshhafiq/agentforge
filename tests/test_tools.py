@@ -256,3 +256,25 @@ def test_registry_unregister_unknown_raises():
     registry = ToolRegistry()
     with pytest.raises(KeyError, match="unknown tool"):
         registry.unregister("nope")
+
+
+def test_registry_search_matches_name_and_description():
+    registry = ToolRegistry()
+
+    @tool(description="Search the knowledge base.")
+    def search_docs(query: str) -> str:
+        return query
+
+    @tool(description="Echo back the input.")
+    def echo(text: str) -> str:
+        return text
+
+    registry.register(search_docs)
+    registry.register(echo)
+    # Name matches and description matches, both case-insensitive.
+    assert [t.name for t in registry.search("search_docs")] == ["search_docs"]
+    assert [t.name for t in registry.search("KNOWLEDGE")] == ["search_docs"]
+    assert [t.name for t in registry.search("echo")] == ["echo"]
+    assert registry.search("missing") == []
+    # An empty query lists everything, in registration order.
+    assert [t.name for t in registry.search("  ")] == ["search_docs", "echo"]
