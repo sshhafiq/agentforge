@@ -200,6 +200,13 @@ class RunStore:
                 "SELECT COUNT(*) FROM events WHERE run_id = ?", (run_id,)
             ).fetchone()[0]
 
+    def count_all_events(self) -> int:
+        """Total number of events stored across every run."""
+        with self._lock:
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM events"
+            ).fetchone()[0]
+
     def has_events(self, run_id: str) -> bool:
         """True when at least one event is stored for ``run_id``."""
         with self._lock:
