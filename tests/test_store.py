@@ -295,3 +295,20 @@ def test_first_event_type_reports_earliest_event():
                              payload={}, ts=2.0))
     assert store.first_event_type("r1") == "workflow_started"
     assert store.first_event_type("other") is None
+
+
+def test_count_all_events_sums_across_runs():
+    store = RunStore()
+    assert store.count_all_events() == 0
+    store.create_run("r1", "w")
+    store.create_run("r2", "w")
+    assert store.count_all_events() == 0
+    store.append_event(Event(seq=0, run_id="r1", type="workflow_started",
+                             payload={}, ts=1.0))
+    store.append_event(Event(seq=1, run_id="r1", type="step_completed",
+                             payload={}, ts=2.0))
+    store.append_event(Event(seq=0, run_id="r2", type="workflow_started",
+                             payload={}, ts=1.0))
+    assert store.count_all_events() == 3
+    store.delete_run("r1")
+    assert store.count_all_events() == 1
