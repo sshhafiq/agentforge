@@ -278,3 +278,24 @@ def test_registry_search_matches_name_and_description():
     assert registry.search("missing") == []
     # An empty query lists everything, in registration order.
     assert [t.name for t in registry.search("  ")] == ["search_docs", "echo"]
+
+
+def test_registry_tools_requiring_matches_required_args_only():
+    registry = ToolRegistry()
+
+    @tool(description="Search the knowledge base.")
+    def search_docs(query: str, top_k: int = 3) -> str:
+        return query
+
+    @tool(description="Echo back the input.")
+    def echo(text: str) -> str:
+        return text
+
+    registry.register(search_docs)
+    registry.register(echo)
+    # Only required arguments count; optional ones (top_k) do not.
+    assert [t.name for t in registry.tools_requiring("query")] == ["search_docs"]
+    assert [t.name for t in registry.tools_requiring("text")] == ["echo"]
+    assert registry.tools_requiring("top_k") == []
+    assert registry.tools_requiring("missing") == []
+    assert registry.tools_requiring("  ") == []
