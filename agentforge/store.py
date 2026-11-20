@@ -393,6 +393,20 @@ class RunStore:
                 "SELECT COUNT(*) FROM approvals WHERE status = 'pending'"
             ).fetchone()[0]
 
+    def list_pending_run_ids(self) -> list[str]:
+        """Sorted run ids that have at least one approval still pending.
+
+        Handy for a human-in-the-loop dashboard that needs to know which
+        runs are waiting on a person, without loading every pending
+        approval row first.
+        """
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT DISTINCT run_id FROM approvals"
+                " WHERE status = 'pending' ORDER BY run_id"
+            ).fetchall()
+        return [r["run_id"] for r in rows]
+
     def resolve_approval(self, approval_id: int, decision: Any) -> None:
         with self._lock, self._conn:
             self._conn.execute(
