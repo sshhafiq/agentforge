@@ -205,3 +205,38 @@ The run store can also summarise a run's event log without loading it:
 `count_events_by_type` groups stored events by type, and
 `first_event_type` / `latest_event_type` report how a run started and
 where it ended up.
+
+## Temporal integration (`agentforge.temporal`)
+
+The engine above implements durable execution in-process. The
+`agentforge.temporal` subpackage maps the same model onto a real
+Temporal cluster, for runs that must survive deploys and wait on humans
+for hours or days:
+
+```
+AgentRunInput ──▶ AgentRunWorkflow (durable, replayable)
+                    │  plan_steps activity     ──▶ heuristic/LLM planner
+                    │  request_approval        ──▶ RunStore approval row
+                    │  ⏸ wait for `approve` signal (approve/reject/edit)
+                    │  execute_tool activity   ──▶ ToolRegistry.call
+                    │     retry policy: 3 attempts, exponential backoff;
+                    │     validation errors are non-retryable
+                    │  finish_run activity     ──▶ RunStore status+checkpoint
+                    └── query `run_state` for live progress
+```
+
+Every transition is mirrored into the `RunStore`, so existing dashboards
+and audits keep working; Temporal adds cross-process durability, a real
+history/replay log, and signal-based human gates.
+
+```bash
+pip install "agentforge[temporal]"
+docker compose up -d                       # local Temporal + UI (:8080)
+python -m agentforge.temporal.worker worker
+python -m agentforge.temporal.worker demo --task "count the words in this" \
+    --approve-tool word_count
+```
+
+The planner is a seam: `AgentActivities(registry, store, planner=...)`
+accepts any callable, so an LLM-backed planner can replace the built-in
+keyword heuristic without touching the workflow.
