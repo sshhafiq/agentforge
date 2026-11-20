@@ -15,6 +15,7 @@ dependencies = ["click>=8.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+temporal = ["temporalio>=1.7"]
 
 [project.scripts]
 agentforge = "agentforge.cli:main"
