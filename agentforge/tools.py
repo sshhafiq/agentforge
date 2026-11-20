@@ -270,6 +270,24 @@ class ToolRegistry:
             if needle in tool.name.lower() or needle in tool.description.lower()
         ]
 
+    def tools_requiring(self, argument: str) -> list[Tool]:
+        """Tools that cannot be called without ``argument``.
+
+        A tool qualifies when ``argument`` is in its schema's required
+        list, so a planner that has (or lacks) a value — a file path, a
+        query, an id — can tell up front which tools are callable with
+        it. Results keep registration order; an empty argument matches
+        nothing.
+        """
+        needle = argument.strip()
+        if not needle:
+            return []
+        return [
+            tool
+            for tool in self._tools.values()
+            if needle in tool.parameters.get("required", [])
+        ]
+
     def to_schemas(self) -> list[dict]:
         """All tools as model-facing function schemas."""
         return [t.to_schema() for t in self._tools.values()]
