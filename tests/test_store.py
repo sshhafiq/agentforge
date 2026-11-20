@@ -312,3 +312,23 @@ def test_count_all_events_sums_across_runs():
     assert store.count_all_events() == 3
     store.delete_run("r1")
     assert store.count_all_events() == 1
+
+
+def test_list_pending_run_ids_tracks_unresolved_runs():
+    store = RunStore()
+    assert store.list_pending_run_ids() == []
+    store.create_run("r2", "w")
+    store.create_run("r1", "w")
+    assert store.list_pending_run_ids() == []
+    a1 = store.save_approval("r2", "step_a", "ok?")
+    store.save_approval("r1", "step_b", "ok?")
+    store.save_approval("r2", "step_c", "ok?")
+    assert store.list_pending_run_ids() == ["r1", "r2"]
+    store.resolve_approval(a1, {"approved": True})
+    assert store.list_pending_run_ids() == ["r1", "r2"]
+    # r2 still has one pending approval left; resolving r1's only
+    # approval drops r1 from the list.
+    pending_r1 = store.pending_approvals("r1")
+    store.resolve_approval(pending_r1[0]["id"], {"approved": True})
+    assert store.list_pending_run_ids() == ["r2"]
+    assert store.list_pending_run_ids() != ["other"]
