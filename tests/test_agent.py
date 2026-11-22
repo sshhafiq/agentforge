@@ -1,6 +1,6 @@
 """Tests for the ReAct agent loop and the mock model client."""
 
-from agentforge.agent import MockModelClient, ReActAgent
+from agentforge.agent import AgentResult, AgentStep, MockModelClient, ReActAgent
 from agentforge.tools import ToolRegistry, tool
 
 
@@ -114,3 +114,22 @@ def test_tool_runtime_errors_become_observations():
     result = agent.run("x")
     assert "kaput" in result.steps[0].observation
     assert "RuntimeError" in result.steps[0].error
+
+
+def test_result_tool_calls_lists_actions_in_order():
+    result = AgentResult(
+        answer="done",
+        steps=[
+            AgentStep(thought="t1", action="search"),
+            AgentStep(thought="t2"),
+            AgentStep(thought="t3", action="fetch"),
+            AgentStep(thought="t4", action="search"),
+        ],
+        iterations=4,
+    )
+    assert result.tool_calls == ["search", "fetch", "search"]
+
+
+def test_result_tool_calls_empty_without_actions():
+    result = AgentResult(answer="done", steps=[AgentStep(thought="t")], iterations=1)
+    assert result.tool_calls == []
