@@ -138,3 +138,12 @@ def test_approval_summarize():
     assert "Approval #7" in text
     assert "Ship it?" in text
     assert "pending" in text
+
+
+def test_approval_is_pending_tracks_status():
+    from agentforge.hitl import ApprovalRequest
+
+    req = ApprovalRequest(id=1, run_id="r1", step_name="gate", question="Ship?")
+    assert req.is_pending is True
+    req.status = "resolved"
+    assert req.is_pending is False
