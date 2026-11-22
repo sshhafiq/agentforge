@@ -85,6 +85,11 @@ class AgentResult:
     iterations: int
     terminated_early: bool = False
 
+    @property
+    def tool_calls(self) -> list[str]:
+        """Tool names invoked across the run, in call order."""
+        return [step.action for step in self.steps if step.action]
+
 
 def _parse_action(text: str) -> tuple[Optional[str], dict]:
     match = _ACTION_RE.search(text)
