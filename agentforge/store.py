@@ -113,6 +113,15 @@ class RunStore:
         """Run ids in creation order, optionally filtered by status."""
         return [r["id"] for r in self.list_runs(status)]
 
+    def latest_run_id(self, status: Optional[str] = None) -> Optional[str]:
+        """Id of the most recently created run, or None when empty.
+
+        Optionally filtered by status, so callers can ask for the
+        latest finished run without scanning the whole list.
+        """
+        ids = self.list_run_ids(status)
+        return ids[-1] if ids else None
+
     def has_run(self, run_id: str) -> bool:
         """True when a run with this id exists in the store."""
         with self._lock:
