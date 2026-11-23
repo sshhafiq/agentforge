@@ -288,6 +288,41 @@ class ToolRegistry:
             if needle in tool.parameters.get("required", [])
         ]
 
+    def tools_accepting(self, argument: str) -> list[Tool]:
+        """Tools that accept ``argument``, required or optional.
+
+        The broader companion to :meth:`tools_requiring`: a tool
+        qualifies when ``argument`` appears anywhere in its schema's
+        properties, so a planner holding a value can find every tool
+        that could consume it, not just the ones that demand it.
+        Results keep registration order; an empty argument matches
+        nothing.
+        """
+        needle = argument.strip()
+        if not needle:
+            return []
+        return [
+            tool
+            for tool in self._tools.values()
+            if needle in tool.parameters.get("properties", {})
+        ]
+
+    def tools_with_prefix(self, prefix: str) -> list[Tool]:
+        """Tools whose name starts with ``prefix``.
+
+        Useful for namespaced registries (``search_*``, ``db_*``) where a
+        caller wants one family of tools without scanning every name.
+        Matching is case-sensitive, like tool names themselves, and
+        results keep registration order. An empty prefix matches every
+        registered tool.
+        """
+        needle = prefix.strip()
+        if not needle:
+            return list(self._tools.values())
+        return [
+            tool for tool in self._tools.values() if tool.name.startswith(needle)
+        ]
+
     def to_schemas(self) -> list[dict]:
         """All tools as model-facing function schemas."""
         return [t.to_schema() for t in self._tools.values()]
