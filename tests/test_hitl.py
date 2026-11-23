@@ -147,3 +147,12 @@ def test_approval_is_pending_tracks_status():
     assert req.is_pending is True
     req.status = "resolved"
     assert req.is_pending is False
+
+
+def test_approval_is_decided_complements_is_pending():
+    from agentforge.hitl import ApprovalRequest
+
+    req = ApprovalRequest(id=1, run_id="r1", step_name="deploy", question="Ship it?")
+    assert req.is_decided is False
+    req.status = "approved"
+    assert req.is_decided is True
