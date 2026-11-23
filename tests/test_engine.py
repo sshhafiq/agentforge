@@ -209,3 +209,22 @@ def test_workflow_names_lists_registered_workflows():
     engine.register_workflow("first", [Step("s", lambda ctx: {})])
     engine.register_workflow("second", [Step("s", lambda ctx: {})])
     assert engine.workflow_names() == ["first", "second"]
+
+
+def test_run_ids_lists_distinct_runs_in_first_seen_order():
+    log = EventLog()
+    assert log.run_ids() == []
+    log.append("run-b", "run_started", {})
+    log.append("run-a", "run_started", {})
+    log.append("run-b", "step_completed", {"step": "one"})
+    assert log.run_ids() == ["run-b", "run-a"]
+
+
+def test_last_event_for_run_returns_latest_and_none_for_unknown():
+    log = EventLog()
+    assert log.last_event_for_run("missing") is None
+    log.append("run-1", EventType.WORKFLOW_STARTED)
+    log.append("run-2", EventType.WORKFLOW_STARTED)
+    latest = log.append("run-1", EventType.WORKFLOW_COMPLETED)
+    assert log.last_event_for_run("run-1") is latest
+    assert log.last_event_for_run("run-2").type == EventType.WORKFLOW_STARTED
