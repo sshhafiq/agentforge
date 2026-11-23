@@ -55,6 +55,11 @@ class ApprovalRequest:
         """True while this request still awaits a human decision."""
         return self.status == "pending"
 
+    @property
+    def is_decided(self) -> bool:
+        """True once a human has approved, rejected, or edited this request."""
+        return not self.is_pending
+
     def summarize(self) -> str:
         lines = [
             f"Approval #{self.id} — run {self.run_id} (step '{self.step_name}')",
