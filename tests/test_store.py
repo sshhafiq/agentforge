@@ -332,3 +332,17 @@ def test_list_pending_run_ids_tracks_unresolved_runs():
     store.resolve_approval(pending_r1[0]["id"], {"approved": True})
     assert store.list_pending_run_ids() == ["r2"]
     assert store.list_pending_run_ids() != ["other"]
+
+
+def test_latest_run_id_reports_most_recent_run():
+    store = RunStore()
+    try:
+        assert store.latest_run_id() is None
+        store.create_run("r1", "first")
+        store.create_run("r2", "second")
+        store.update_run_status("r2", "completed")
+        assert store.latest_run_id() == "r2"
+        assert store.latest_run_id(status="completed") == "r2"
+        assert store.latest_run_id(status="failed") is None
+    finally:
+        store.close()
