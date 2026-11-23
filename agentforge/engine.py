@@ -116,6 +116,28 @@ class EventLog:
             counts[event.type] = counts.get(event.type, 0) + 1
         return counts
 
+    def last_event_for_run(self, run_id: str) -> Optional[Event]:
+        """Most recent event recorded for ``run_id``, or None if unknown.
+
+        Useful for status polling that only needs the latest transition
+        for a run instead of scanning its full history.
+        """
+        for event in reversed(self._events):
+            if event.run_id == run_id:
+                return event
+        return None
+
+    def run_ids(self) -> list[str]:
+        """Distinct run ids in the log, in first-seen order.
+
+        Handy for dashboards that need to enumerate every run the log
+        knows about without scanning the raw event list themselves.
+        """
+        seen: dict[str, None] = {}
+        for event in self._events:
+            seen.setdefault(event.run_id, None)
+        return list(seen)
+
     def to_json(self) -> str:
         return json.dumps([e.to_dict() for e in self._events])
 
