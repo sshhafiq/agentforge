@@ -299,3 +299,48 @@ def test_registry_tools_requiring_matches_required_args_only():
     assert registry.tools_requiring("top_k") == []
     assert registry.tools_requiring("missing") == []
     assert registry.tools_requiring("  ") == []
+
+
+def test_registry_tools_accepting_matches_required_and_optional_args():
+    registry = ToolRegistry()
+
+    @tool(description="Search the knowledge base.")
+    def search_docs(query: str, top_k: int = 3) -> str:
+        return query
+
+    @tool(description="Echo back the input.")
+    def echo(text: str) -> str:
+        return text
+
+    registry.register(search_docs)
+    registry.register(echo)
+    # Required and optional arguments both count here.
+    assert [t.name for t in registry.tools_accepting("query")] == ["search_docs"]
+    assert [t.name for t in registry.tools_accepting("top_k")] == ["search_docs"]
+    assert [t.name for t in registry.tools_accepting("text")] == ["echo"]
+    assert registry.tools_accepting("missing") == []
+    assert registry.tools_accepting("  ") == []
+
+
+def test_registry_tools_with_prefix_matches_name_prefix():
+    registry = ToolRegistry()
+
+    @tool(description="Search the knowledge base.")
+    def search_docs(query: str) -> str:
+        return query
+
+    @tool(description="Search the web.")
+    def search_web(query: str) -> str:
+        return query
+
+    @tool(description="Echo back the input.")
+    def echo(text: str) -> str:
+        return text
+
+    registry.register(search_docs)
+    registry.register(search_web)
+    registry.register(echo)
+    assert [t.name for t in registry.tools_with_prefix("search_")] == ["search_docs", "search_web"]
+    assert [t.name for t in registry.tools_with_prefix("echo")] == ["echo"]
+    assert registry.tools_with_prefix("missing") == []
+    assert [t.name for t in registry.tools_with_prefix("")] == ["search_docs", "search_web", "echo"]
