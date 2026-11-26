@@ -20,6 +20,11 @@ from agentforge.hitl import make_decision
 from agentforge.store import RunStore
 
 
+def format_run_row(run: dict) -> str:
+    """Format one recorded run as a single list-output line."""
+    return f"{run['id']}  {run['name']:<12} {run['status']}"
+
+
 def _engine_for(store_path: str) -> WorkflowEngine:
     from examples import build_all  # deferred: examples need the package
 
@@ -72,7 +77,7 @@ def list_runs(ctx: click.Context) -> None:
         click.echo("no runs recorded yet")
         return
     for r in runs:
-        click.echo(f"{r['id']}  {r['name']:<12} {r['status']}")
+        click.echo(format_run_row(r))
 
 
 @main.command()
